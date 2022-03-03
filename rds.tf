@@ -23,6 +23,12 @@ resource "aws_db_subnet_group" "read-replica" {
 
 
 resource "aws_db_instance" "api-service" {
+  s3_import {
+    bucket_name = ""
+    ingestion_role = ""
+    source_engine = ""
+    source_engine_version = ""
+  }
   allocated_storage = 30
   max_allocated_storage = 50
   engine = "mysql"

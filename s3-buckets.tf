@@ -46,7 +46,7 @@ resource "aws_s3_bucket" "code-pipeline-artifacts-bucket" {
         "Effect": "Allow",
         "Principal": {
             "AWS": [
-              "${aws_iam_role.deployment-code-pipeline-role.arn}"
+              "${aws_iam_role.code-pipeline-role.arn}"
             ]
         },
         "Action": [
@@ -78,7 +78,7 @@ resource "aws_s3_bucket_ownership_controls" "code-pipeline-artifacts-bucket-owne
 
 
 resource "aws_s3_bucket" "api-service-document-bucket" {
-  bucket = "${var.app_name}-api-service-document-bucket"
+  bucket = "docs.${var.domain_name}" //"${var.app_name}-api-service-document-bucket"
   force_destroy = true
   versioning {
     enabled = true
@@ -90,7 +90,8 @@ resource "aws_s3_bucket" "api-service-document-bucket" {
 }
 
 resource "aws_s3_bucket" "web-prod-bucket" {
-  bucket = "${var.app_name}-web-prod-bucket"
+  bucket = "app.${var.domain_name}"
+//  bucket = "${var.app_name}-web-prod-bucket"
   acl = "public-read"
   force_destroy = true
 
@@ -104,7 +105,8 @@ resource "aws_s3_bucket" "web-prod-bucket" {
 }
 
 resource "aws_s3_bucket" "web-stag-bucket" {
-  bucket = "${var.app_name}-web-stag-bucket"
+  bucket = "stag.${var.domain_name}" //
+//  bucket = "${var.app_name}-web-stag-bucket"
   acl = "public-read"
   force_destroy = true
 

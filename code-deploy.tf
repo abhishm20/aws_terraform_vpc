@@ -6,7 +6,7 @@ resource "aws_codedeploy_app" "api-service" {
 resource "aws_codedeploy_deployment_group" "api-service-group" {
   app_name = aws_codedeploy_app.api-service.name
   deployment_group_name = "${var.app_name}-api-service-production-group"
-  service_role_arn = aws_iam_role.deployment-code-pipeline-role.arn
+  service_role_arn = aws_iam_role.code-pipeline-role.arn
   deployment_config_name = "CodeDeployDefault.AllAtOnce"
 
   deployment_style {

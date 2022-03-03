@@ -12,18 +12,12 @@ terraform {
 }
 
 provider "aws" {
-  profile = "development"
-  region  = var.region
-  alias   = "development"
-}
-
-provider "aws" {
-  profile = "deployment"
+  profile = "saraloan"
   region  = var.region
 }
 
 provider "aws" {
-  profile = "deployment"
+  profile = "saraloan"
   alias  = "cloudfront-acm"
   region = "us-east-1"
 }

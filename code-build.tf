@@ -1,7 +1,6 @@
 resource "aws_codebuild_project" "api-service-code-build" {
-  provider = aws.development
   name = "${var.app_name}-api-service-code-build"
-  service_role = aws_iam_role.code-build-role.arn
+  service_role = aws_iam_role.code-pipeline-role.arn
 
   artifacts {
     location = aws_s3_bucket.code-pipeline-artifacts-bucket.bucket

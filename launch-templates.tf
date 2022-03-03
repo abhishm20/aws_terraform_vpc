@@ -4,7 +4,7 @@
 //  image_id = var.ubuntu_ami_id
 //  instance_initiated_shutdown_behavior = "terminate"
 //  instance_type = "t3.medium"
-//  key_name = aws_key_pair.api-service.key_name
+//  key_name = aws_key_pair.ansible-hosts-key.key_name
 //  update_default_version = true
 //  user_data = filebase64("${path.root}/init_scripts/primary-api-service.sh")
 //  network_interfaces {
@@ -44,7 +44,7 @@ resource "aws_launch_template" "secondary-api-service" {
   image_id = var.ubuntu_ami_id
   instance_initiated_shutdown_behavior = "terminate"
   instance_type = "t3.medium"
-  key_name = aws_key_pair.api-service.key_name
+  key_name = aws_key_pair.ansible-hosts-key.key_name
   update_default_version = true
   user_data = filebase64("${path.root}/init_scripts/secondary-api-service.sh")
   network_interfaces {
@@ -84,7 +84,7 @@ resource "aws_launch_template" "celery-default-worker" {
   image_id = var.ubuntu_ami_id
   instance_initiated_shutdown_behavior = "terminate"
   instance_type = "t3.medium"
-  key_name = aws_key_pair.api-service.key_name
+  key_name = aws_key_pair.ansible-hosts-key.key_name
   update_default_version = true
   user_data = filebase64("${path.root}/init_scripts/celery-default-worker.sh")
   network_interfaces {

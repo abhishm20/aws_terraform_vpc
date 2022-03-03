@@ -1,5 +1,4 @@
 //resource "aws_codepipeline" "development-api-service-code-pipeline" {
-//  provider = aws.development
 //  name = "${var.app_name}-api-service-code-pipeline"
 //  role_arn = aws_iam_role.development-code-pipeline-role.arn
 //

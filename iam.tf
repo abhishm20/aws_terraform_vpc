@@ -1,93 +1,91 @@
-resource "aws_iam_role" "code-build-role" {
-  name = "${var.app_name}-code-build-role"
-  provider = aws.development
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "codebuild.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy" "code-build-policy" {
-  provider = aws.development
-  role = aws_iam_role.code-build-role.name
-  name = "${var.app_name}-code-build-policy"
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-        "Effect": "Allow",
-        "Action": [
-            "ec2:CreateNetworkInterface",
-            "ec2:DescribeDhcpOptions",
-            "ec2:DescribeNetworkInterfaces",
-            "ec2:DeleteNetworkInterface",
-            "ec2:DescribeSubnets",
-            "ec2:DescribeSecurityGroups",
-            "ec2:DescribeVpcs"
-        ],
-        "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "codebuild:BatchGetBuilds",
-        "codebuild:StartBuild"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect":"Allow",
-      "Action": ["kms:*"],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ],
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Resource": "*",
-      "Action": [
-          "codecommit:GitPull"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:PutObjectAcl"
-      ],
-      "Resource": [
-        "${aws_s3_bucket.code-pipeline-artifacts-bucket.arn}/*"
-      ]
-    }
-  ]
-}
-POLICY
-}
+//resource "aws_iam_role" "code-build-role" {
+//  name = "${var.app_name}-code-build-role"
+//
+//  assume_role_policy = <<EOF
+//{
+//  "Version": "2012-10-17",
+//  "Statement": [
+//    {
+//      "Effect": "Allow",
+//      "Principal": {
+//        "Service": "codebuild.amazonaws.com"
+//      },
+//      "Action": "sts:AssumeRole"
+//    }
+//  ]
+//}
+//EOF
+//}
+//
+//resource "aws_iam_role_policy" "code-build-policy" {
+//  role = aws_iam_role.code-build-role.name
+//  name = "${var.app_name}-code-build-policy"
+//  policy = <<POLICY
+//{
+//  "Version": "2012-10-17",
+//  "Statement": [
+//    {
+//        "Effect": "Allow",
+//        "Action": [
+//            "ec2:CreateNetworkInterface",
+//            "ec2:DescribeDhcpOptions",
+//            "ec2:DescribeNetworkInterfaces",
+//            "ec2:DeleteNetworkInterface",
+//            "ec2:DescribeSubnets",
+//            "ec2:DescribeSecurityGroups",
+//            "ec2:DescribeVpcs"
+//        ],
+//        "Resource": "*"
+//    },
+//    {
+//      "Effect": "Allow",
+//      "Action": [
+//        "codebuild:BatchGetBuilds",
+//        "codebuild:StartBuild"
+//      ],
+//      "Resource": "*"
+//    },
+//    {
+//      "Effect":"Allow",
+//      "Action": ["kms:*"],
+//      "Resource": "*"
+//    },
+//    {
+//      "Effect": "Allow",
+//      "Resource": [
+//        "*"
+//      ],
+//      "Action": [
+//        "logs:CreateLogGroup",
+//        "logs:CreateLogStream",
+//        "logs:PutLogEvents"
+//      ]
+//    },
+//    {
+//      "Effect": "Allow",
+//      "Resource": "*",
+//      "Action": [
+//          "codecommit:GitPull"
+//      ]
+//    },
+//    {
+//      "Effect": "Allow",
+//      "Action": [
+//        "s3:GetObject",
+//        "s3:PutObject",
+//        "s3:PutObjectAcl"
+//      ],
+//      "Resource": [
+//        "${aws_s3_bucket.code-pipeline-artifacts-bucket.arn}/*"
+//      ]
+//    }
+//  ]
+//}
+//POLICY
+//}
 
 
-resource "aws_iam_role" "deployment-code-pipeline-role" {
+resource "aws_iam_role" "code-pipeline-role" {
   name = "${var.app_name}-code-pipeline-role"
 
   assume_role_policy = <<EOF
@@ -97,7 +95,8 @@ resource "aws_iam_role" "deployment-code-pipeline-role" {
     {
       "Effect": "Allow",
       "Principal": {
-        "Service": "codepipeline.amazonaws.com"
+        "Service": "codepipeline.amazonaws.com",
+        "Service": "codebuild.amazonaws.com"
       },
       "Action": "sts:AssumeRole"
     }
@@ -106,8 +105,8 @@ resource "aws_iam_role" "deployment-code-pipeline-role" {
 EOF
 }
 
-resource "aws_iam_role_policy" "deployment-code-pipeline-policy" {
-  role = aws_iam_role.deployment-code-pipeline-role.id
+resource "aws_iam_role_policy" "code-pipeline-policy" {
+  role = aws_iam_role.code-pipeline-role.id
   name = "${var.app_name}-code-pipeline-policy"
 
   policy = <<EOF
