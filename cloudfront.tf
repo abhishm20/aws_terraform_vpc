@@ -1,26 +1,25 @@
 locals {
-  api_service_document_s3_origin_id = "S3-${aws_s3_bucket.api-service-document-bucket.bucket}"
-  web_service_document_s3_origin_id = "S3-${aws_s3_bucket.web-prod-bucket.bucket}"
-  pwa_service_document_s3_origin_id = "S3-${aws_s3_bucket.web-stag-bucket.bucket}"
+  document_bucket_s3_origin_id = "S3-${data.aws_s3_bucket.document-bucket.bucket}"
+  web_bucket_s3_origin_id = "S3-${data.aws_s3_bucket.web-bucket.bucket}"
 }
 
-resource "aws_cloudfront_origin_access_identity" "api-service-document-cloudfront-access-identity" {
-  comment = "S3-${aws_s3_bucket.api-service-document-bucket.bucket}"
+resource "aws_cloudfront_origin_access_identity" "document-bucket-cloudfront-access-identity" {
+  comment = "S3-${data.aws_s3_bucket.document-bucket.bucket}"
 }
 
-resource "aws_cloudfront_public_key" "api-service-document-cloudfront-public-key" {
-  comment = "${var.app_name}-api-service-document-cloudfront-public-key"
-  encoded_key = file("${path.root}/ssh_keys/api-service-document-cloudfront.pub")
-  name = "${var.app_name}-api-service-document-cloudfront-public-key"
+resource "aws_cloudfront_public_key" "document-bucket-cloudfront-public-key" {
+  comment = "${var.app_name}-document-bucket-cloudfront-public-key"
+  encoded_key = file("${path.root}/ssh_keys/document-bucket-cloudfront.pub")
+  name = "${var.app_name}-document-bucket-cloudfront-public-key"
 }
 
-resource "aws_cloudfront_distribution" "api-service-document-cloudfront" {
+resource "aws_cloudfront_distribution" "document-bucket-cloudfront" {
   origin {
-    domain_name = aws_s3_bucket.api-service-document-bucket.bucket_domain_name
-    origin_id = local.api_service_document_s3_origin_id
+    domain_name = data.aws_s3_bucket.document-bucket.bucket_domain_name
+    origin_id = local.document_bucket_s3_origin_id
 
     s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.api-service-document-cloudfront-access-identity.cloudfront_access_identity_path
+      origin_access_identity = aws_cloudfront_origin_access_identity.document-bucket-cloudfront-access-identity.cloudfront_access_identity_path
     }
   }
 
@@ -35,7 +34,7 @@ resource "aws_cloudfront_distribution" "api-service-document-cloudfront" {
   }
 
   aliases = [
-    "docs.${var.domain_name}"]
+    "${var.document-bucket-subdomain}.${var.domain_name}"]
 
   default_cache_behavior {
     allowed_methods = [
@@ -49,7 +48,7 @@ resource "aws_cloudfront_distribution" "api-service-document-cloudfront" {
     cached_methods = [
       "GET",
       "HEAD"]
-    target_origin_id = local.api_service_document_s3_origin_id
+    target_origin_id = local.document_bucket_s3_origin_id
 
     forwarded_values {
       query_string = false
@@ -71,14 +70,15 @@ resource "aws_cloudfront_distribution" "api-service-document-cloudfront" {
   restrictions {
     geo_restriction {
       restriction_type = "whitelist"
-      locations = ["IN"]
+      locations = [
+        "IN"]
     }
   }
 
-  //  trusted_signers = [aws_cloudfront_public_key.api-service-document-cloudfront-public-key]
+    trusted_signers = [aws_cloudfront_public_key.document-bucket-cloudfront-public-key]
 
   tags = {
-    Environment = "${var.app_name}-api-service-document-cloudfront"
+    Environment = "${var.app_name}-document-bucket-cloudfront"
   }
 
   viewer_certificate {
@@ -89,17 +89,17 @@ resource "aws_cloudfront_distribution" "api-service-document-cloudfront" {
 }
 
 
-resource "aws_cloudfront_origin_access_identity" "web-prod-cloudfront-access-identity" {
-  comment = "S3-${aws_s3_bucket.web-prod-bucket.bucket}"
+resource "aws_cloudfront_origin_access_identity" "web-bucket-cloudfront-access-identity" {
+  comment = "S3-${data.aws_s3_bucket.web-bucket.bucket}"
 }
 
-resource "aws_cloudfront_distribution" "web-prod-cloudfront" {
+resource "aws_cloudfront_distribution" "web-bucket-cloudfront" {
   origin {
-    domain_name = aws_s3_bucket.web-prod-bucket.bucket_domain_name
-    origin_id = local.web_service_document_s3_origin_id
+    domain_name = data.aws_s3_bucket.web-bucket.bucket_domain_name
+    origin_id = local.web_bucket_s3_origin_id
 
     s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.web-prod-cloudfront-access-identity.cloudfront_access_identity_path
+      origin_access_identity = aws_cloudfront_origin_access_identity.web-bucket-cloudfront-access-identity.cloudfront_access_identity_path
     }
   }
 
@@ -115,7 +115,7 @@ resource "aws_cloudfront_distribution" "web-prod-cloudfront" {
   }
 
   aliases = [
-    "web.${var.domain_name}"]
+    "${var.web-bucket-subdomain}.${var.domain_name}"]
 
   default_cache_behavior {
     allowed_methods = [
@@ -125,7 +125,7 @@ resource "aws_cloudfront_distribution" "web-prod-cloudfront" {
     cached_methods = [
       "GET",
       "HEAD"]
-    target_origin_id = local.web_service_document_s3_origin_id
+    target_origin_id = local.web_bucket_s3_origin_id
 
     forwarded_values {
       query_string = false
@@ -153,91 +153,11 @@ resource "aws_cloudfront_distribution" "web-prod-cloudfront" {
   }
 
   tags = {
-    Environment = "${var.app_name}-web-prod-cloudfront"
+    Environment = "${var.app_name}-web-bucket-cloudfront"
   }
 
   viewer_certificate {
     acm_certificate_arn = aws_acm_certificate.for-prod-cloudfront.arn
-    ssl_support_method = "sni-only"
-  }
-
-  custom_error_response {
-    error_code = 404
-    response_code = 200
-    response_page_path = "/index.html"
-  }
-}
-
-
-resource "aws_cloudfront_origin_access_identity" "web-stag-cloudfront-access-identity" {
-  comment = "S3-${aws_s3_bucket.web-prod-bucket.bucket}"
-}
-
-resource "aws_cloudfront_distribution" "web-stag-cloudfront" {
-  origin {
-    domain_name = aws_s3_bucket.web-prod-bucket.bucket_domain_name
-    origin_id = local.web_service_document_s3_origin_id
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.web-stag-cloudfront-access-identity.cloudfront_access_identity_path
-    }
-  }
-
-  enabled = true
-  is_ipv6_enabled = true
-  comment = "Serves web app for ${var.app_name}"
-  default_root_object = "index.html"
-
-  logging_config {
-    include_cookies = false
-    bucket = aws_s3_bucket.aws-logs.bucket_domain_name
-    prefix = "web-prod-cloudfront"
-  }
-
-  aliases = [
-    "web.${var.domain_name}"]
-
-  default_cache_behavior {
-    allowed_methods = [
-      "GET",
-      "HEAD",
-      "OPTIONS"]
-    cached_methods = [
-      "GET",
-      "HEAD"]
-    target_origin_id = local.web_service_document_s3_origin_id
-
-    forwarded_values {
-      query_string = false
-
-      cookies {
-        forward = "none"
-      }
-    }
-
-    min_ttl = 0
-    default_ttl = 0
-    max_ttl = 0
-    compress = true
-    viewer_protocol_policy = "redirect-to-https"
-  }
-
-  price_class = "PriceClass_200"
-
-  restrictions {
-    geo_restriction {
-      restriction_type = "whitelist"
-      locations = [
-        "IN"]
-    }
-  }
-
-  tags = {
-    Environment = "${var.app_name}-web-prod-cloudfront"
-  }
-
-  viewer_certificate {
-    acm_certificate_arn = aws_acm_certificate.for-stag-cloudfront.arn
     ssl_support_method = "sni-only"
   }
 

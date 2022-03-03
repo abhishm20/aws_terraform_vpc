@@ -1,90 +1,4 @@
-//resource "aws_iam_role" "code-build-role" {
-//  name = "${var.app_name}-code-build-role"
-//
-//  assume_role_policy = <<EOF
-//{
-//  "Version": "2012-10-17",
-//  "Statement": [
-//    {
-//      "Effect": "Allow",
-//      "Principal": {
-//        "Service": "codebuild.amazonaws.com"
-//      },
-//      "Action": "sts:AssumeRole"
-//    }
-//  ]
-//}
-//EOF
-//}
-//
-//resource "aws_iam_role_policy" "code-build-policy" {
-//  role = aws_iam_role.code-build-role.name
-//  name = "${var.app_name}-code-build-policy"
-//  policy = <<POLICY
-//{
-//  "Version": "2012-10-17",
-//  "Statement": [
-//    {
-//        "Effect": "Allow",
-//        "Action": [
-//            "ec2:CreateNetworkInterface",
-//            "ec2:DescribeDhcpOptions",
-//            "ec2:DescribeNetworkInterfaces",
-//            "ec2:DeleteNetworkInterface",
-//            "ec2:DescribeSubnets",
-//            "ec2:DescribeSecurityGroups",
-//            "ec2:DescribeVpcs"
-//        ],
-//        "Resource": "*"
-//    },
-//    {
-//      "Effect": "Allow",
-//      "Action": [
-//        "codebuild:BatchGetBuilds",
-//        "codebuild:StartBuild"
-//      ],
-//      "Resource": "*"
-//    },
-//    {
-//      "Effect":"Allow",
-//      "Action": ["kms:*"],
-//      "Resource": "*"
-//    },
-//    {
-//      "Effect": "Allow",
-//      "Resource": [
-//        "*"
-//      ],
-//      "Action": [
-//        "logs:CreateLogGroup",
-//        "logs:CreateLogStream",
-//        "logs:PutLogEvents"
-//      ]
-//    },
-//    {
-//      "Effect": "Allow",
-//      "Resource": "*",
-//      "Action": [
-//          "codecommit:GitPull"
-//      ]
-//    },
-//    {
-//      "Effect": "Allow",
-//      "Action": [
-//        "s3:GetObject",
-//        "s3:PutObject",
-//        "s3:PutObjectAcl"
-//      ],
-//      "Resource": [
-//        "${aws_s3_bucket.code-pipeline-artifacts-bucket.arn}/*"
-//      ]
-//    }
-//  ]
-//}
-//POLICY
-//}
-
-
+// Used for pipeline
 resource "aws_iam_role" "code-pipeline-role" {
   name = "${var.app_name}-code-pipeline-role"
 
@@ -96,7 +10,8 @@ resource "aws_iam_role" "code-pipeline-role" {
       "Effect": "Allow",
       "Principal": {
         "Service": "codepipeline.amazonaws.com",
-        "Service": "codebuild.amazonaws.com"
+        "Service": "codebuild.amazonaws.com",
+        "Service": "codedeploy.amazonaws.com"
       },
       "Action": "sts:AssumeRole"
     }
@@ -160,13 +75,7 @@ resource "aws_iam_role_policy" "code-pipeline-policy" {
 EOF
 }
 
-
-
-
-
-
-
-
+// Used for EC2 Code deployment
 resource "aws_iam_role" "ec2-code-deploy-role" {
   name = "${var.app_name}-ec2-code-deploy-role"
 
@@ -216,19 +125,19 @@ resource "aws_iam_instance_profile" "ec2-code-deploy-instance-profile" {
 }
 
 // api service documents
-resource "aws_iam_access_key" "api-service-s3-access-key" {
-  user = aws_iam_user.api-service-s3-access.name
+resource "aws_iam_access_key" "api-service-document-bucket-access-key" {
+  user = aws_iam_user.api-service-document-bucket-access-user.name
   //  pgp_key = "keybase:some_person_that_exists"
 }
 
-resource "aws_iam_user" "api-service-s3-access" {
-  name = "${var.app_name}-api-service-s3-access"
+resource "aws_iam_user" "api-service-document-bucket-access-user" {
+  name = "${var.app_name}-api-service-document-bucket-access-user"
   path = "/system/"
 }
 
-resource "aws_iam_user_policy" "api-service-s3-access-user" {
-  name = "${var.app_name}-api-service-s3-access-user"
-  user = aws_iam_user.api-service-s3-access.name
+resource "aws_iam_user_policy" "api-service-document-bucket-access-user-policy" {
+  name = "${var.app_name}-api-service-document-bucket-access-user-policy"
+  user = aws_iam_user.api-service-document-bucket-access-user.name
 
   policy = <<EOF
 {
@@ -245,7 +154,7 @@ resource "aws_iam_user_policy" "api-service-s3-access-user" {
       ],
       "Effect": "Allow",
       "Resource": [
-        "${aws_s3_bucket.api-service-document-bucket.arn}/*"
+        "${data.aws_s3_bucket.document-bucket.arn}/*"
       ]
     }
   ]
@@ -255,19 +164,19 @@ EOF
 
 
 // production s3 access
-resource "aws_iam_access_key" "web-prod-s3-access-key" {
-  user = aws_iam_user.web-prod-s3-access.name
+resource "aws_iam_access_key" "web-bucket-access-key" {
+  user = aws_iam_user.web-bucket-access-user.name
   //  pgp_key = "keybase:some_person_that_exists"
 }
 
-resource "aws_iam_user" "web-prod-s3-access" {
-  name = "${var.app_name}-web-prod-s3-access"
+resource "aws_iam_user" "web-bucket-access-user" {
+  name = "${var.app_name}-web-bucket-access-user"
   path = "/system/"
 }
 
-resource "aws_iam_user_policy" "web-prod-s3-access-user" {
-  name = "${var.app_name}-web-prod-s3-access-user"
-  user = aws_iam_user.web-prod-s3-access.name
+resource "aws_iam_user_policy" "web-bucket-access-user-policy" {
+  name = "${var.app_name}-web-bucket-access-user-policy"
+  user = aws_iam_user.web-bucket-access-user.name
 
   policy = <<EOF
 {
@@ -279,8 +188,8 @@ resource "aws_iam_user_policy" "web-prod-s3-access-user" {
       ],
       "Effect": "Allow",
       "Resource": [
-        "${aws_s3_bucket.web-prod-bucket.arn}",
-        "${aws_s3_bucket.web-prod-bucket.arn}/*",
+        "${data.aws_s3_bucket.web-bucket.arn}",
+        "${data.aws_s3_bucket.web-bucket.arn}/*",
       ]
     },
     {
@@ -289,57 +198,13 @@ resource "aws_iam_user_policy" "web-prod-s3-access-user" {
       ],
       "Effect": "Allow",
       "Resource": [
-        "${aws_cloudfront_distribution.web-stag-cloudfront.arn}",
+        "${aws_cloudfront_distribution.web-bucket-cloudfront.arn}",
       ]
     }
   ]
 }
 EOF
 }
-
-// staging s3 access
-resource "aws_iam_access_key" "web-stag-s3-access-key" {
-  user = aws_iam_user.web-stag-s3-access.name
-  //  pgp_key = "keybase:some_person_that_exists"
-}
-
-resource "aws_iam_user" "web-stag-s3-access" {
-  name = "${var.app_name}-web-stag-s3-access"
-  path = "/system/"
-}
-
-resource "aws_iam_user_policy" "web-stag-s3-access-user" {
-  name = "${var.app_name}-web-stag-s3-access-user"
-  user = aws_iam_user.web-stag-s3-access.name
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "s3:*"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "${aws_s3_bucket.web-stag-bucket.arn}",
-        "${aws_s3_bucket.web-stag-bucket.arn}/*"
-      ]
-    },
-    {
-      "Action": [
-        "cloudfront:CreateInvalidation"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "${aws_cloudfront_distribution.web-stag-cloudfront.arn}"
-      ]
-    }
-  ]
-}
-EOF
-}
-
 
 
 resource "aws_iam_role" "sns-sms-cloudwatch-logs" {

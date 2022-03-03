@@ -1,9 +1,9 @@
-output "api-service-s3-access-key" {
-  value = aws_iam_access_key.api-service-s3-access-key
+output "api-service-document-bucket-access-key" {
+  value = aws_iam_access_key.api-service-document-bucket-access-key
 }
 
-output "web-prod-s3-access-key" {
-  value = aws_iam_access_key.web-prod-s3-access-key
+output "web-bucket-access-key" {
+  value = aws_iam_access_key.web-bucket-access-key
 }
 
 output "bastion-public-id" {
@@ -11,19 +11,19 @@ output "bastion-public-id" {
 }
 
 output "api-service-document-bucket" {
-  value = aws_s3_bucket.api-service-document-bucket
+  value = data.aws_s3_bucket.document-bucket
 }
 
 output "rds-instance" {
-  value = aws_db_instance.api-service
+  value = aws_db_instance.db-master-rds-instance
 }
 
-output "elastic-cache" {
-  value = aws_elasticache_cluster.api-service
+output "api-service-elastic-cache" {
+  value = aws_elasticache_cluster.api-service-elastic-cache-cluster
 }
 
-output "api-service-document-cloudfront-public-key" {
-  value = aws_cloudfront_public_key.api-service-document-cloudfront-public-key
+output "document-bucket-cloudfront-public-key" {
+  value = aws_cloudfront_public_key.document-bucket-cloudfront-public-key
 }
 
 //output "sns-sms-access-key" {

@@ -64,7 +64,7 @@ resource "aws_subnet" "private-subnets" {
 # Create NAT Gateway
 resource "aws_nat_gateway" "nat-gateway" {
   subnet_id     = element(values(aws_subnet.public-subnets), 1).id
-  allocation_id = aws_eip.api-service-prod-ip.id
+  allocation_id = aws_eip.api-service-elastic-ip.id
   tags = {
     "Name" = "${var.app_name}_nat_gateway"
   }

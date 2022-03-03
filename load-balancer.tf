@@ -1,5 +1,5 @@
 resource "aws_lb_target_group" "api-service-target-group" {
-  name = "${var.app_name}-api-service-tg"
+  name = "${var.app_name}-api-service-target-group"
   port = 80
   protocol = "HTTP"
   target_type = "instance"
@@ -17,12 +17,12 @@ resource "aws_lb_target_group" "api-service-target-group" {
   }
 }
 
-resource "aws_lb" "api-service" {
-  name = "${var.app_name}-api-service-lb"
+resource "aws_lb" "api-service-load-balancer" {
+  name = "${var.app_name}-api-service-load-balancer"
   internal = false
   load_balancer_type = "application"
   security_groups = [
-    aws_security_group.load-balancer.id]
+    aws_security_group.api-service-load-balancer-security-group.id]
 
   dynamic "subnet_mapping" {
     for_each = [for i in range(length(values(aws_subnet.public-subnets))) : {
@@ -45,8 +45,8 @@ resource "aws_lb" "api-service" {
   }
 }
 
-resource "aws_lb_listener" "api-service-https" {
-  load_balancer_arn = aws_lb.api-service.arn
+resource "aws_lb_listener" "api-service-https-listener" {
+  load_balancer_arn = aws_lb.api-service-load-balancer.arn
   port = "443"
   protocol = "HTTPS"
   ssl_policy = "ELBSecurityPolicy-2016-08"
@@ -58,8 +58,8 @@ resource "aws_lb_listener" "api-service-https" {
   }
 }
 
-resource "aws_lb_listener" "api-service-http" {
-  load_balancer_arn = aws_lb.api-service.arn
+resource "aws_lb_listener" "api-service-http-listener" {
+  load_balancer_arn = aws_lb.api-service-load-balancer.arn
   port = "80"
   protocol = "HTTP"
   ssl_policy = ""
@@ -76,7 +76,7 @@ resource "aws_lb_listener" "api-service-http" {
 }
 
 
-resource "aws_lb_target_group_attachment" "api-service" {
+resource "aws_lb_target_group_attachment" "api-service-target-group-attachment" {
   target_group_arn = aws_lb_target_group.api-service-target-group.arn
   target_id = aws_instance.primary-api-service.id
   port = 80

@@ -11,13 +11,13 @@ variable "domain_name" {
 variable "api_service_deployment_branch_name" {
   default = "master"
 }
-variable "rds_prod_master_instance_type" {
+variable "rds_master_instance_type" {
   default = "db.t3.medium"
 }
 variable "ansible_server_instance_type" {
   default = "t3.small"
 }
-variable "rds_prod_read_replica_instance_type" {
+variable "rds_read_replica_instance_type" {
   default = "db.t3.small"
 }
 variable "mysql_username" {
@@ -29,13 +29,18 @@ variable "mysql_password" {
 variable "mysql_db_name" {
   default = "llm_db"
 }
+variable "web-bucket-subdomain" {
+  default = "web"
+}
+variable "api-service-subdomain" {
+  default = "api"
+}
+variable "document-bucket-subdomain" {
+  default = "docs"
+}
 variable "api_service_primary_instance_type" {
   default = "t3.large"
 }
-variable "api_service_staging_instance_type" {
-  default = "t3.medium"
-}
-
 variable "api_service_bastion_host_type" {
   default = "t3.small"
 }

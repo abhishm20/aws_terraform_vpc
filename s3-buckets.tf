@@ -77,45 +77,18 @@ resource "aws_s3_bucket_ownership_controls" "code-pipeline-artifacts-bucket-owne
 }
 
 
-resource "aws_s3_bucket" "api-service-document-bucket" {
-  bucket = "docs.${var.domain_name}" //"${var.app_name}-api-service-document-bucket"
+resource "aws_s3_bucket" "document-bucket" {
+  bucket = "${var.document-bucket-subdomain}.${var.domain_name}"
   force_destroy = true
   versioning {
     enabled = true
   }
 
   tags = {
-    Name = "${var.app_name}-api-service-document-bucket"
+    Name = "${var.document-bucket-subdomain}.${var.domain_name}"
   }
 }
 
-resource "aws_s3_bucket" "web-prod-bucket" {
-  bucket = "app.${var.domain_name}"
-//  bucket = "${var.app_name}-web-prod-bucket"
-  acl = "public-read"
-  force_destroy = true
-
-  website {
-    error_document = "index.html"
-    index_document = "index.html"
-  }
-  tags = {
-    Name = "${var.app_name}-web-prod-bucket"
-  }
-}
-
-resource "aws_s3_bucket" "web-stag-bucket" {
-  bucket = "stag.${var.domain_name}" //
-//  bucket = "${var.app_name}-web-stag-bucket"
-  acl = "public-read"
-  force_destroy = true
-
-  website {
-    error_document = "index.html"
-    index_document = "index.html"
-  }
-
-  tags = {
-    Name = "${var.app_name}-web-stag-bucket"
-  }
+data "aws_s3_bucket" "web-bucket" {
+  bucket = "${var.web-bucket-subdomain}.${var.domain_name}"
 }
